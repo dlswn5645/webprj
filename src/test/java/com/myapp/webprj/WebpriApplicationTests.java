@@ -1,4 +1,4 @@
-package com.myapp.webpri;
+package com.myapp.webprj;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
