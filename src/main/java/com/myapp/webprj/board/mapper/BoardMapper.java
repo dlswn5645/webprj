@@ -18,6 +18,15 @@ public interface BoardMapper {
     //총 게시물 수 조회
     int getTotalCount();
 
+    //제목으로 검색 기능
+    List<Board> getListByTitle(Criteria cri);
+    //제목으로 검색게시물 조회
+    int getTotalCountByTitle(Criteria cri);
+
+    //검색처리 통합 조회
+    List<Board> getSearchList(Criteria cri);
+    int getSearchTotal(Criteria cri);
+
     //글 상세조회
     Board findByBno(Long bno);
 

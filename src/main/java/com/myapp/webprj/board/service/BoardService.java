@@ -22,5 +22,9 @@ public interface BoardService {
     //게시글 전체 조회
     List<Board> getList(Criteria cri);
 
-    int getTotal();
+    //총 게시글 수 조회
+    int getTotal(Criteria cri);
+
+    //게시물 검색 조회 과정
+    List<Board> searchList(Criteria cri);
 }
