@@ -100,7 +100,7 @@
 
 
 <!-- Modal -->
-      <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+      <div class="modal fade" id="replyModal" tabindex="-1" role="dialog"
         aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -124,17 +124,18 @@
               </div>
       
             </div>
-<div class="modal-footer">
-        <button id='modalModBtn' type="button" class="btn btn-warning">수정</button>
-        <button id='modalRemoveBtn' type="button" class="btn btn-danger">삭제</button>
-        <button id='modalRegisterBtn' type="button" class="btn btn-primary">등록</button>
-        <button id='modalCloseBtn' type="button" class="btn btn-default">Close</button>
-      </div>          </div>
-          <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-      </div>
-      <!-- /.modal -->
+      <div class="modal-footer">
+            <button id='modalModBtn' type="button" class="btn btn-warning">수정</button>
+            <button id='modalRemoveBtn' type="button" class="btn btn-danger">삭제</button>
+            <button id='modalRegisterBtn' type="button" class="btn btn-primary">등록</button>
+            <button id='modalCloseBtn' type="button" class="btn btn-default">Close</button>
+      </div>          
+    </div>
+      <!-- /.modal-content -->
+  </div>
+    <!-- /.modal-dialog -->
+</div>
+  <!-- /.modal -->
 
 <!-- //댓글 영역 끝 -->
 
@@ -143,6 +144,9 @@
 <script>
 
   let bno = '${board.bno}';//원본 글 번호
+
+  //현재 댓글 페이지 정보
+  let curPageNum = 1; 
 
   //날짜 포맷 변환 함수
   function formatDate(datetime){
@@ -176,13 +180,13 @@
     (hour < 10) ? hour = '0' + hour : hour;
     (minute < 10) ? minute = '0' + minute : minute;
 
-    return year + "-" + month + "-" + day + "-" + ampm + " " + hour + " : " + minute ; 
+    return year + "-" + month + "-" + day + "-" + ampm + " " + hour + ":" + minute ; 
   }
   
  //댓글 페이지 목록을 만들어주는 함수
  function showReplyPage(count) {
     // console.log(count);
-    let pageNum = 1;
+    let pageNum = curPageNum;
     const $pageFooter = document.querySelector('.panel-footer');
 
     //한번에 보여줄 페이지 개수
@@ -225,11 +229,11 @@
         return;
       }
       e.preventDefault();
-      console.log("페이지 버튼 클릭됨:",e.target.getAttribute('href'));
+      // console.log("페이지 버튼 클릭됨:",e.target.getAttribute('href'));
 
-      const targetPage = e.target.getAttribute('href');
+      curPageNum = e.target.getAttribute('href');
       
-      showReplyPage(targetPage);
+      showReplyList(curPageNum);
     });
   }
 
@@ -268,9 +272,71 @@
         });
   }
 
+  //JQuery영역
+  $(document).ready(function() {
+
+    const $modal = $('#replyModal');
+
+    //게시글 등록을 눌렀을 때 모달팝업을 띄우는 이벤트 
+    document.getElementById('addReplyBtn').addEventListener('click',() => {
+
+      //$modal - 모달 전체 노드 
+      //find() - 요소에서 자식노드를 모두 탐색하여 선택자에 맞는 요소르 가져옴 
+      $modal.find('input').val('');
+
+      $modal.find('input[name=replyDate]').parent().hide();
+
+      $modal.find('button[id != modalRegisterBtn]').hide();
+
+      $modal.find('#modalCloseBtn').show();
+
+      $modal.modal('show');
+
+    });
+
+    //모달 close이벤트
+    $('#modalCloseBtn').on('click',e => {
+      $modal.modal('hide');
+    });
+
+    //게시물 등록 서버요청 비동기 처리 이벤트 
+    $('#modalRegisterBtn').on('click',e => {
+
+      //서버로 전송할 데이터 - 디버깅 
+      const replyObj ={
+          bno: bno,
+          reply: $('input[name=reply').val(),
+          replyer: $('input[name=replyer').val()
+      };
+
+      console.log(replyObj);
+
+      const reqInfo = {
+        method: 'POST',
+        headers: {
+          'content-type':'application/json'
+        },
+        body:JSON.stringify(replyObj)
+      };
+      fetch('/api/v1/replies/',reqInfo)
+            .then(res => res.text())
+            .then(msg => {
+              if(msg === 'regSuccess'){
+                $modal.modal('hide');
+                $modal.find('input').val('');
+                showReplyList(curPageNum);
+              }else{
+                alert('댓글 등록 실패');
+              }
+            });
+
+    });
+
+  });//JQuery영역 
+
   (function () {
 
-    showReplyList(1);
+    showReplyList(curPageNum);
 
   }());
 </script> 
