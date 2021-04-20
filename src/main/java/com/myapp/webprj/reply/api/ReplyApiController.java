@@ -3,6 +3,7 @@ package com.myapp.webprj.reply.api;
 import com.myapp.webprj.common.Criteria;
 import com.myapp.webprj.reply.domain.Reply;
 import com.myapp.webprj.reply.service.ReplyService;
+import com.sun.org.apache.regexp.internal.RE;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -52,6 +53,31 @@ public class ReplyApiController {
         return count == 1 ?
                 new ResponseEntity<>("regSuccess", HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //댓글 수정
+//    @RequestMapping(value = "/{rno}",method = {RequestMethod.PUT,RequestMethod.PATCH})
+    @PutMapping("/{rno}")
+    @PatchMapping("/{rno}")
+    public ResponseEntity<String> modify(@PathVariable Long rno, @RequestBody Reply reply){
+        reply.setRno(rno);
+        log.info("/api/v1/replies/" + rno + "PUT: " + reply);
+        int modCount = replyService.modify(reply);
+        return modCount == 1 ?
+                new ResponseEntity<>("modSuccess",HttpStatus.OK)
+                :new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //댓글 삭제
+    @DeleteMapping("/{bno}/{rno}")
+    public ResponseEntity<String> delete(@PathVariable Long rno,@PathVariable Long bno){
+
+        log.info("/api/v1/replies/" + bno + "/" + rno + "DELETE");
+        int delCount = replyService.remove(bno, rno);
+
+        return delCount == 1 ?
+                new ResponseEntity<>("delSuccess",HttpStatus.OK)
+                :new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
