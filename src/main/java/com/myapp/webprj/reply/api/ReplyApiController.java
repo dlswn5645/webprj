@@ -54,7 +54,6 @@ public class ReplyApiController {
                 new ResponseEntity<>("regSuccess", HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
     //댓글 수정
 //    @RequestMapping(value = "/{rno}",method = {RequestMethod.PUT,RequestMethod.PATCH})
     @PutMapping("/{rno}")
