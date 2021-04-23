@@ -16,7 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -36,7 +38,7 @@ public class UploadController {
     //업로드된 파일을 처리
     //MultipartFile : 클라이언트가 전송한 파일데이터
     @PostMapping("/upload")
-    public String upload(@RequestParam("file") List<MultipartFile> fileList){
+    public String upload(@RequestParam("file") List<MultipartFile> fileList) throws IOException {
 
 
         for (MultipartFile file : fileList) {
@@ -65,7 +67,7 @@ public class UploadController {
     //@ResponseBody를 메서드에 붙여주세요
     @PostMapping("/ajaxUpload")
     @ResponseBody
-    public ResponseEntity<String[]> ajaxUpload(List<MultipartFile> files){
+    public ResponseEntity<String[]> ajaxUpload(List<MultipartFile> files) throws IOException {
 
         //업로드된 파일 수 만큼 배열의 길이를 설정
         int len = (files == null) ? 0: files.size();
@@ -103,22 +105,30 @@ public class UploadController {
             InputStream in = new FileInputStream(file);
 
             //클라이언트로 파일을 보내줄때는 응답 헤더에 파일의 컨텐츠 타입을 알려줘야 함
-            String ext = FileUtils.getFileExtension(fileName);
 
             //응답헤더에 컨텐츠타입을 설정
             HttpHeaders headers = new HttpHeaders();
-            switch (ext.toLowerCase()){
-                case "jpg":
-                    headers.setContentType(MediaType.IMAGE_JPEG);
-                    break;
-                case "gif":
-                    headers.setContentType(MediaType.IMAGE_GIF);
-                    break;
-                case "png":
-                    headers.setContentType(MediaType.IMAGE_PNG);
-                    break;
-            }
-            return new ResponseEntity<>(IOUtils.toByteArray(in),headers,HttpStatus.OK);
+
+            //파일 명에서 확장자를 추출하는 코드
+           String ext = FileUtils.getFileExtension(fileName);
+           MediaType mediaType = FileUtils.getMediaType(ext);
+
+            //이미지인지 여부 확인
+            // 이미지인 경우: 단순 썸네일을 읽어서 응답
+            if(mediaType != null){
+               headers.setContentType(mediaType);
+           }else {//이미지가 아닌 경우: 첨부파일 다운로드 기능을 부여해서 응답
+               //다운로드 기능을 가진 것에 대한 컨텐츠 타입 설정
+               headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+               //파일 명 원래대로 복구
+               fileName = fileName.substring(fileName.lastIndexOf("_") + 1);
+               //파일명이 한글인 경우 인코딩을 재설정
+               String encoding = new String(fileName.getBytes("UTF-8"),"ISO-8859-1");
+               //첨부파일 형식으로 다운로드하겠다고 헤더를 설정
+               headers.add("Content-Disposition","attachment; filename=\"" + encoding + "\"");
+
+           }
+               return new ResponseEntity<>(IOUtils.toByteArray(in),headers,HttpStatus.OK);
         }catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
