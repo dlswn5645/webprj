@@ -11,6 +11,7 @@
         <result property="regDate" column="regdate" />
         <result property="updateDate" column="updatedate" />
         <result property="replyCnt" column="reply_cnt"/>
+        <result property="fileName" column="file_name"/>
     </resultMap>
 
     <select id="getList" resultMap="boardMap">
@@ -131,6 +132,20 @@
            (bno, title, content, writer)
         VALUES (seq_free_board.nextval, #{title}, #{content}, #{writer})
     </insert>
+
+    <!-- 파일 첨부 처리 -->
+    <insert id="addFile">
+        INSERT INTO file_upload
+        (file_name, bno)
+        VALUES (#{fileName}, SEQ_FREE_BOARD.currval)
+    </insert>
+
+    <!-- 파일명 조회 -->
+    <select id="findFileNames" resultType="string">
+        SELECT file_name
+        FROM file_upload
+        WHERE bno = #{bno}
+    </select>
 
     <update id="update">
         UPDATE tbl_free_board

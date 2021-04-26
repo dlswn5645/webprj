@@ -13,6 +13,9 @@ public interface BoardService {
     //게시글 상제 조회
     Board get(Long bno);
 
+    //첨부파일명 조회
+    List<String> getFileNames(Long bno);
+
     //게시글 수정 과정
     boolean modify(Board board);
 
