@@ -18,4 +18,7 @@ public interface MemberService {
 
     //회원 정보 조회 처리
     Member getUser(String account);
+
+    //로그인 처리
+    String login(Member inputData, Member dbData);
 }
